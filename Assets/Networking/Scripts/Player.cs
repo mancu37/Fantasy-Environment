@@ -16,6 +16,8 @@ public class Player : NetworkBehaviour {
     [SerializeField] ToggleEvent OnToggleLocal;
     [SerializeField] ToggleEvent OnToggleRemote;
 
+    [SerializeField] float respawnTime = 5f;
+
     public GameObject mainCamera;
 
     void Start()
@@ -29,7 +31,10 @@ public class Player : NetworkBehaviour {
     {
 
         if (isLocalPlayer)
+        {
+            PlayerCanvas.canvas.Initialize();
             mainCamera.SetActive(false);
+        }
 
         OnToggleShared.Invoke(true);
 
@@ -42,7 +47,10 @@ public class Player : NetworkBehaviour {
     private void DisablePlayer()
     {
         if (isLocalPlayer)
+        {
+            PlayerCanvas.canvas.HideCrosshair();
             mainCamera.SetActive(true);
+        }
 
         OnToggleShared.Invoke(false);
 
@@ -50,5 +58,23 @@ public class Player : NetworkBehaviour {
             OnToggleLocal.Invoke(false);
         else
             OnToggleRemote.Invoke(false);
+    }
+
+    public void Die()
+    {
+        DisablePlayer();
+        Invoke("Respawn", respawnTime);
+    }
+
+    void Respawn()
+    {
+        if (isLocalPlayer)
+        {
+            Transform spawn = NetworkManager.singleton.GetStartPosition();
+            transform.position = spawn.position;
+            transform.rotation = spawn.rotation;
+        }
+
+        EnablePlayer();
     }
 }

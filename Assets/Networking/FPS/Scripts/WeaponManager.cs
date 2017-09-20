@@ -18,6 +18,8 @@ public class WeaponManager : NetworkBehaviour {
     Weapon[] weapons;
     [SerializeField]
     Transform weaponHolder;
+    [SerializeField]
+    Transform firePosition;
 
     // Use this for initialization
     void Start () {
@@ -89,7 +91,8 @@ public class WeaponManager : NetworkBehaviour {
 
                 //PlaySound("Shoot", weapons[selectedWeapon].sounds);
 
-                CmdFireShot();
+                CmdFireShot(firePosition.position, firePosition.forward);
+                
             }
         }
 
@@ -104,8 +107,8 @@ public class WeaponManager : NetworkBehaviour {
 
                 weapons[selectedWeapon].WeaponNextFireRate = Time.time + weapons[selectedWeapon].WeaponFireRate;
 
-                CmdFireShot();
-
+                CmdFireShot(firePosition.position, firePosition.forward);
+                
 
 
             }
@@ -144,16 +147,45 @@ public class WeaponManager : NetworkBehaviour {
         s.source.Play();
     }
 
+  
+
     [Command]
-    void CmdFireShot()
+    void CmdFireShot(Vector3 origin, Vector3 direction)
     {
+
+        RaycastHit hit;
+
+        Ray ray = new Ray(origin, direction);
+        Debug.DrawRay(ray.origin, ray.direction * 3f, Color.red, 1f);
+
+        bool result = Physics.Raycast(ray, out hit, 50f);
+
+        
+        if (result)
+        {
+            Debug.Log("Hit something: " + hit.collider.name);
+
+            PlayerHealth enemy = hit.transform.GetComponent<PlayerHealth>();
+
+            if (enemy != null)
+                enemy.TakeDamage();
+        }
+
+
         RpcShowEffect();
     }
 
     [ClientRpc]
     void RpcShowEffect()
     {
+
+        Debug.Log("RpcShowEffect Method called");
+
         weapons[selectedWeapon].Muzzeflash.Play();
-        PlaySound("Shoot", weapons[selectedWeapon].sounds);
+        //Array.Find(weapons[selectedWeapon].sounds, p => p.name == "Shoot").source.Play();
+
+
     }
+
+
 }

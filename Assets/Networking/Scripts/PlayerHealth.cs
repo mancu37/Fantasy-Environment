@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 public class PlayerHealth : NetworkBehaviour {
 
-    [SerializeField] int maxHealth = 3;
+    [SerializeField] int maxHealth = 100;
 
     [SyncVar(hook = "OnChangedHealthValue")]int health;
 
@@ -13,8 +13,11 @@ public class PlayerHealth : NetworkBehaviour {
 
     private void Awake()
     {
+        health = maxHealth;
         player = GetComponent<Player>();
     }
+
+    
 
     [ServerCallback]
     private void OnEnable()
@@ -25,13 +28,13 @@ public class PlayerHealth : NetworkBehaviour {
     [Server]
     public bool TakeDamage()
     {
-        Debug.Log("TakeDamage Method is called");
+        //Debug.Log("TakeDamage Method is called");
         bool died = false;
 
         if (health <= 0)
             return died;
 
-        health--;
+        health -= 2;
 
         died = health <= 0;
 
@@ -40,20 +43,31 @@ public class PlayerHealth : NetworkBehaviour {
         return died;
     }
 
+
     [ClientRpc]
     void RpcTakeDamage(bool died)
     {
         if (isLocalPlayer)
-            PlayerCanvas.canvas.FlashDamageEffect();
+        {
+            //PlayerCanvas.canvas.WriteLog("Flash Damage: " + GetComponent<NetworkIdentity>().netId);
+            PlayerCanvas.canvas.FlashDamageEffect();            
+        }
 
         if (died)
+        {
             player.Die();
+        }
     }
 
     void OnChangedHealthValue(int value)
     {
         health = value;
         if (isLocalPlayer)
+        {
             PlayerCanvas.canvas.SetHealth(value);
+
+            if (health < 30)
+                PlayerCanvas.canvas.playerDamageImage().alpha = 1;  // 1.0f - (health / 100);
+        }
     }
 }

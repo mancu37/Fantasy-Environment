@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class PlayerCanvas : MonoBehaviour {
 
     public static PlayerCanvas canvas;
@@ -11,16 +12,26 @@ public class PlayerCanvas : MonoBehaviour {
     Image crosshair;
 
     [SerializeField]
-    UIFader damageImage;
+    UIFader damage;
 
     [SerializeField]
-    Text health;
+    CanvasGroup playerDamage;
+
+    [SerializeField]
+    Slider health;
+
+    [SerializeField]
+    Text log;
+
+    [SerializeField]
+    GameObject healthBar;
 
     private void Awake()
     {
         if(canvas == null)
         {
             canvas = this;
+            HideHealthBar();
         }
         else if (canvas != null)
         {
@@ -31,19 +42,23 @@ public class PlayerCanvas : MonoBehaviour {
     private void Reset()
     {
         crosshair = GameObject.Find("Crosshair").GetComponent<Image>();
-        damageImage = GameObject.Find("DamageFlash").GetComponent<UIFader>();
-        health = GameObject.Find("HealthValue").GetComponent<Text>();
-
+        damage = GameObject.Find("DamageFlash").GetComponent<UIFader>();
+        log = GameObject.Find("Log").GetComponent<Text>();
+        playerDamage = GameObject.Find("PlayerDamage").GetComponent<CanvasGroup>();
+        healthBar = GameObject.Find("HealthBar");
+        health = healthBar.GetComponent<Slider>();
     }
 
     public void Initialize()
     {
+        healthBar.SetActive(true);
         crosshair.enabled = true;
+        
     }
 
-    internal void FlashDamageEffect()
+    public void FlashDamageEffect()
     {
-        
+        damage.FlashDamageEffect();
     }
 
     public void HideCrosshair()
@@ -51,8 +66,28 @@ public class PlayerCanvas : MonoBehaviour {
         crosshair.enabled = false;
     }
 
-    public void SetHealth(int value)
+    public void HideHealthBar()
     {
-        health.text = value.ToString();
+        healthBar.SetActive(false);
+    }
+
+    public void WriteLog(string text)
+    {
+        log.text = text;
+    }
+
+    internal void SetHealth(int value)
+    {
+        health.value = value;        
+    }
+
+    public CanvasGroup playerDamageImage()
+    {
+        return playerDamage;
+    }
+
+    public void HidePlayerDamage()
+    {
+        playerDamage.alpha = 0f;
     }
 }

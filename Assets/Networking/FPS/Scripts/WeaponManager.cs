@@ -24,9 +24,6 @@ public class WeaponManager : NetworkBehaviour {
     // Use this for initialization
     void Start () {
 
-        if (!isLocalPlayer)
-            return;
-
         foreach(Weapon weapon in weapons)
         {
             foreach(WeaponSound sound in weapon.sounds)
@@ -35,6 +32,11 @@ public class WeaponManager : NetworkBehaviour {
                 sound.source.clip = sound.clip;
                 sound.source.volume = sound.volume;
                 sound.source.pitch = sound.pitch;
+                sound.source.spatialBlend = 1.0f;
+                sound.source.maxDistance = 50f;
+                sound.source.minDistance = 5f;
+                sound.source.rolloffMode = AudioRolloffMode.Logarithmic;
+
             }
         }
 
@@ -139,6 +141,11 @@ public class WeaponManager : NetworkBehaviour {
             animator.SetTrigger("Reload");
             PlaySound("Reload", weapons[selectedWeapon].sounds);
         }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            PlayerCanvas.canvas.FlashDamageEffect();
+        }
     }
 
     public void PlaySound(string name, WeaponSound[] weaponSounds)
@@ -163,7 +170,7 @@ public class WeaponManager : NetworkBehaviour {
         
         if (result)
         {
-            Debug.Log("Hit something: " + hit.collider.name);
+            //Debug.Log("Hit something: " + hit.collider.name);
 
             PlayerHealth enemy = hit.transform.GetComponent<PlayerHealth>();
 
@@ -179,12 +186,15 @@ public class WeaponManager : NetworkBehaviour {
     void RpcShowEffect()
     {
 
-        Debug.Log("RpcShowEffect Method called");
+        //Debug.Log("RpcShowEffect Method called");
+        //PlayerCanvas.canvas.WriteLog("RpcShowEffect Method called");
 
-        weapons[selectedWeapon].Muzzeflash.Play();
-        //Array.Find(weapons[selectedWeapon].sounds, p => p.name == "Shoot").source.Play();
+        //if (isLocalPlayer)
+        //{
+            weapons[selectedWeapon].Muzzeflash.Play();
+            Array.Find(weapons[selectedWeapon].sounds, p => p.name == "Shoot").source.Play();
 
-
+        //}
     }
 
 

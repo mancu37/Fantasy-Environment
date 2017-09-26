@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -19,12 +19,23 @@ public class Player : NetworkBehaviour {
     [SerializeField] float respawnTime = 5f;
 
     public GameObject mainCamera;
+    NetworkAnimator anim;
 
     void Start()
     {
+        anim = GetComponent<NetworkAnimator>();
         mainCamera = Camera.main.gameObject;
 
         EnablePlayer();
+    }
+
+    void Update()
+    {
+        if (isLocalPlayer)
+        {
+            anim.animator.SetFloat("Speed", Input.GetAxis("Vertical"));
+            anim.animator.SetFloat("Turn", Input.GetAxis("Horizontal"));
+        }
     }
 
     private void EnablePlayer()
@@ -49,6 +60,8 @@ public class Player : NetworkBehaviour {
         if (isLocalPlayer)
         {
             PlayerCanvas.canvas.HideCrosshair();
+            PlayerCanvas.canvas.HideHealthBar();
+            PlayerCanvas.canvas.HidePlayerDamage();
             mainCamera.SetActive(true);
         }
 
@@ -62,19 +75,28 @@ public class Player : NetworkBehaviour {
 
     public void Die()
     {
+        anim.animator.SetTrigger("Died");
         DisablePlayer();
         Invoke("Respawn", respawnTime);
+
+        
     }
+
 
     void Respawn()
     {
-        if (isLocalPlayer)
-        {
+        //if (isLocalPlayer)
+        //{
+            
             Transform spawn = NetworkManager.singleton.GetStartPosition();
             transform.position = spawn.position;
             transform.rotation = spawn.rotation;
-        }
+            anim.animator.SetTrigger("Restart");
+        //}
 
+       
         EnablePlayer();
     }
+
+ 
 }
